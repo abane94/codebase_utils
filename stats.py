@@ -1,4 +1,5 @@
 import re
+import sys
 
 def parse_git_log(in_path):
     files_info_dict = {}
@@ -40,11 +41,22 @@ def print_dict_to_csv(d, key_comlumn_name, out_path):
         for file_name, file_info in d.items():
             row = file_name
             for field in file_info.values():
+                if ',' in str(field):
+                    field = '"' + field + '"'
                 row = row + ',' + str(field)
             f.write(row + '\n')
 
+# print('running')
+# d = parse_git_log('C:\\Users\\abane_000\\Desktop\\Files\\Projects\\By Theme\\Tech\\projects stats\\git_log_v1\\git_log_v1.txt')
+# print(str(len(d)))
+# print_dict_to_csv(d, 'file name', 'C:\\Users\\abane_000\\Desktop\\Files\\Projects\\By Theme\\Tech\\projects stats\\git_log_v1.csv')
+# print('finsihed running')
+
+in_file = sys.argv[1]
+out_file = sys.argv[2]
+print(sys.argv)
 print('running')
-d = parse_git_log('C:\\Users\\abane_000\\Desktop\\Files\\Projects\\By Theme\\Tech\\projects stats\\git_log_v1\\git_log_v1.txt')
+d = parse_git_log(in_file)
 print(str(len(d)))
-print_dict_to_csv(d, 'file name', 'C:\\Users\\abane_000\\Desktop\\Files\\Projects\\By Theme\\Tech\\projects stats\\git_log_v1.csv')
+print_dict_to_csv(d, 'file name', out_file)
 print('finsihed running')

@@ -1,3 +1,6 @@
+import glob
+import os
+
 def parse_file(file_path, file_info_dict, routing_dict):
     with open(parse_file) as f:
         file_dict = {}
@@ -49,3 +52,13 @@ def parse_file(file_path, file_info_dict, routing_dict):
     file_dict['path'] = file_path
     file_info_dict[file_id] = file_dict
     routing_dict[file_id] = routes_ls
+
+
+def get_files_ls(base_path, file_extension, recur=True):
+    if base_path[-1] != os.sep:
+        base_path += os.sep
+    if file_extension[0] != '.':
+        file_extension = '.' + file_extension
+    ls = glob.glob(base_path + '**/*' + extension, recursive=recur)
+    return ls
+

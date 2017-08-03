@@ -1,5 +1,6 @@
 import glob
 import os
+import json
 
 def parse_file(file_path, file_info_dict, routing_dict):
     with open(parse_file) as f:
@@ -7,6 +8,7 @@ def parse_file(file_path, file_info_dict, routing_dict):
         routes_ls = []
         package = '-package_not_found-'
         name = '-name_not_found-'
+        file_dict['length'] = len(f)
         for line in f:
             if 'import' in line:
                 dependency = line.split(' ')[1].replace(';', '').strip()
@@ -62,3 +64,25 @@ def get_files_ls(base_path, file_extension, recur=True):
     ls = glob.glob(base_path + '**/*' + extension, recursive=recur)
     return ls
 
+def run_parser(base_path, files_out, routes_out, file_extension, recusion=True):
+    files_ls = get_files_ls(base_path, file_extension, recusion)
+    file_dict = {}
+    routes_dict = {}
+
+    for f in files_ls:
+        parse_file(f, file_dict, routes_dict)
+    with open(files_out, 'w') as f_out:
+        json.dump(file_dict, f_out)
+
+    with open(routes_out) as f_out:
+        json.dump(routes_dict, f_out)
+
+
+base_path = sys.argv[1]
+files_out_path = sys.argv[2]
+routes_out_path = sys.argv[3]
+file_extension = 'java' # sys.argv[4]
+print(sys.argv)
+print('running')
+run_parser(base_path, files_out_path, routes_out_path, file_extension) # recursion
+print('finsihed running')

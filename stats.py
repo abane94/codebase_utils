@@ -41,6 +41,8 @@ def print_dict_to_csv(d, key_comlumn_name, out_path):
         for file_name, file_info in d.items():
             row = file_name
             for field in file_info.values():
+                if '"' in str(field):
+                    field = str(field).replace('"', "''")   # this may or may not work
                 if ',' in str(field):
                     field = '"' + field + '"'
                 row = row + ',' + str(field)

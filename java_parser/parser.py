@@ -1,6 +1,7 @@
 import glob
 import os
 import json
+import sys
 
 def parse_file(file_path, file_info_dict, routing_dict):
     with open(parse_file) as f:
@@ -40,7 +41,7 @@ def parse_file(file_path, file_info_dict, routing_dict):
                 ls = line.split(',')
                 d = {}
                 for param in ls:
-                    if 'method' param:
+                    if 'method' in param:
                         d['method'] = param.split('=')[1].strip()
                     elif 'value' in param:
                         d['path'] = param.split('=')[1].replace('"','').strip() #TODO: handle string var/const as value
@@ -61,7 +62,7 @@ def get_files_ls(base_path, file_extension, recur=True):
         base_path += os.sep
     if file_extension[0] != '.':
         file_extension = '.' + file_extension
-    ls = glob.glob(base_path + '**/*' + extension, recursive=recur)
+    ls = glob.glob(base_path + '**/*' + file_extension, recursive=recur)
     return ls
 
 def run_parser(base_path, files_out, routes_out, file_extension, recusion=True):
@@ -70,18 +71,28 @@ def run_parser(base_path, files_out, routes_out, file_extension, recusion=True):
     routes_dict = {}
 
     for f in files_ls:
-        parse_file(f, file_dict, routes_dict)
+        if os.path.isdir(f):
+            continue
+        if 'TU_' in f:
+            continue
+        try:
+            parse_file(str(f), file_dict, routes_dict)
+        except:
+            print('ERROR: ' + f)
     with open(files_out, 'w') as f_out:
         json.dump(file_dict, f_out)
 
-    with open(routes_out) as f_out:
+    with open(routes_out, 'w') as f_out:
         json.dump(routes_dict, f_out)
 
-
+if len(sys.argv) < 4:
+    print('enter System arguments: <base path> <files info output path> <routes map output path>')
+    exit(1)
 base_path = sys.argv[1]
 files_out_path = sys.argv[2]
 routes_out_path = sys.argv[3]
 file_extension = 'java' # sys.argv[4]
+ 
 print(sys.argv)
 print('running')
 run_parser(base_path, files_out_path, routes_out_path, file_extension) # recursion

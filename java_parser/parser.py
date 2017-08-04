@@ -4,21 +4,23 @@ import json
 import sys
 
 def parse_file(file_path, file_info_dict, routing_dict):
-    with open(parse_file) as f:
+    with open(file_path) as f:
         file_dict = {}
         routes_ls = []
         package = '-package_not_found-'
         name = '-name_not_found-'
-        file_dict['length'] = len(f)
+        # file_dict['length'] = len(f) # this has no len()
         for line in f:
             if 'import' in line:
                 dependency = line.split(' ')[1].replace(';', '').strip()
                 if('jda' in line or 'redprairie' in line):
                     ls = file_dict.get('local_imports',[])
                     ls.append(dependency)
+                    file_dict['local_imports'] = ls
                 else:
                     ls = file_dict.get('library_imports',[])
                     ls.append(dependency)
+                    file_dict['library_imports'] = ls
 
             if 'package' in line:
                 package = line.split(' ')[1].replace(';', '').strip()
@@ -29,22 +31,28 @@ def parse_file(file_path, file_info_dict, routing_dict):
                 name = ls[n+1]
                 # get exteds and implements
 
-            if 'public' in line and 'interface' in line:
+            if (('public' in line) and ('interface' in line)):
                 ls = line.split(' ')
                 n = ls.index('interface')
                 name = ls[n+1]
                 # get exteds
 
-            if '@requestmapping' in line.lower():
+            if '@RequestMapping' in line:
                 line = line.replace('@RequestMapping(', '')
+                n = len(line)
                 line = line[0:-1] # trim trailing ')' TODO: handle multi line annotations
+                if len(line) + 1 != n:
+                    print('ALERT')
+                    print('ALERT')
                 ls = line.split(',')
+                # print(str(ls))
                 d = {}
                 for param in ls:
                     if 'method' in param:
                         d['method'] = param.split('=')[1].strip()
                     elif 'value' in param:
                         d['path'] = param.split('=')[1].replace('"','').strip() #TODO: handle string var/const as value
+                routes_ls.append(d)
 
             for path_dict in routes_ls:
                 path_dict['file_path'] = file_path
@@ -71,14 +79,18 @@ def run_parser(base_path, files_out, routes_out, file_extension, recusion=True):
     routes_dict = {}
 
     for f in files_ls:
+        # f = str(f)
+        # f = repr(f)
+        # f = f.replace('\\\\', os.sep)
+        # f = f.replace('/', os.sep)
         if os.path.isdir(f):
             continue
         if 'TU_' in f:
             continue
         try:
-            parse_file(str(f), file_dict, routes_dict)
-        except:
-            print('ERROR: ' + f)
+            parse_file(f, file_dict, routes_dict)
+        except Exception as e:
+            print('ERROR: ' + repr(f) + '\n\t' + str(e))
     with open(files_out, 'w') as f_out:
         json.dump(file_dict, f_out)
 
